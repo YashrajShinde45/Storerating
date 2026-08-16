@@ -1,7 +1,16 @@
 const bcrypt = require("bcrypt");
+
 const sendResponse = require("../utils/response");
 const generateToken = require("../utils/token");
-const { findUserByEmail } = require("../models/userModel");
+
+const {
+  findUserByEmail,
+  createUser,
+} = require("../models/userModel");
+
+const {
+  validateRegister,
+} = require("../validations/authValidation");
 
 const login = async (req, res, next) => {
   try {
@@ -13,9 +22,9 @@ const login = async (req, res, next) => {
       return sendResponse(res, 401, "Invalid email or password");
     }
 
-    const passwordMatched = await bcrypt.compare(password, user.password);
+    const matched = await bcrypt.compare(password, user.password);
 
-    if (!passwordMatched) {
+    if (!matched) {
       return sendResponse(res, 401, "Invalid email or password");
     }
 
@@ -35,6 +44,49 @@ const login = async (req, res, next) => {
   }
 };
 
+const register = async (req, res, next) => {
+  try {
+    const { name, email, address, password } = req.body;
+
+    const errors = validateRegister({
+      name,
+      email,
+      address,
+      password,
+    });
+
+    if (errors.length) {
+      return sendResponse(res, 400, "Validation failed", errors);
+    }
+
+    const existingUser = await findUserByEmail(email);
+
+    if (existingUser) {
+      return sendResponse(res, 409, "Email already registered");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await createUser({
+      name,
+      email,
+      password: hashedPassword,
+      address,
+      role: "user",
+    });
+
+    const token = generateToken(newUser);
+
+    sendResponse(res, 201, "Registration successful", {
+      token,
+      user: newUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   login,
+  register,
 };

@@ -1,5 +1,14 @@
+import { useAuth } from "../../context/AuthContext";
+
 const AdminDashboard = () => {
-  return <h1>Admin Dashboard</h1>;
+  const { user } = useAuth();
+
+  return (
+    <>
+      <h1>Admin Dashboard</h1>
+      <p>Welcome {user?.name}</p>
+    </>
+  );
 };
 
 export default AdminDashboard;

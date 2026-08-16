@@ -1,25 +1,16 @@
 const express = require("express");
-const pool = require("./config/db");
+const routes = require("./routes");
+const notFound = require("./middleware/notFound");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT 1 AS status");
+app.use("/", routes);
 
-    res.json({
-      message: "Store Rating Platform Backend Running",
-      database: "Connected",
-      status: result.rows[0].status,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Database connection failed",
-      error: error.message,
-    });
-  }
-});
+app.use(notFound);
+
+app.use(errorHandler);
 
 module.exports = app;

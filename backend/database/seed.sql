@@ -8,7 +8,7 @@ INSERT INTO users (
 VALUES (
     'System Administrator',
     'admin@example.com',
-    '$2b$10$placeholderhashedpassword',
+    '$2b$10$zWpSO9sFcrb3CKUShooTAO2xZMhIHIuGKlqf/E8S3AtPzK9HdGv4e',
     'Head Office',
     'admin'
 );

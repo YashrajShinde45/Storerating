@@ -1,5 +1,3 @@
-USE store_rating_platform;
-
 INSERT INTO users (
     name,
     email,
@@ -14,4 +12,3 @@ VALUES (
     'Head Office',
     'admin'
 );
-

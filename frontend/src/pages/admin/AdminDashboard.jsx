@@ -178,7 +178,7 @@ const AdminDashboard = () => {
           {
             key: "rating",
             label: "Rating",
-            render: (row) => (row.rating ? `${row.rating} ★` : "0 ★"),
+            render: (row) => (row.rating ? `${row.rating}` : "0"),
           },
         ]}
         data={stores}

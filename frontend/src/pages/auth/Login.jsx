@@ -6,7 +6,6 @@ import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
-
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -15,6 +14,7 @@ const Login = () => {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
     setForm({
@@ -23,14 +23,12 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const executeLogin = async (credentials) => {
     setError("");
+    setLoading(true);
 
     try {
-      const response = await loginUser(form);
-
+      const response = await loginUser(credentials);
       login(response.data.token, response.data.user);
 
       if (response.data.user.role === "admin") {
@@ -40,20 +38,60 @@ const Login = () => {
       } else {
         navigate("/user");
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    executeLogin(form);
+  };
+
+  const handleQuickLogin = (email, password) => {
+    const creds = { email, password };
+    setForm(creds);
+    executeLogin(creds);
   };
 
   return (
     <div className="auth-container">
       <h1>Login</h1>
 
+      <div className="demo-login-box">
+        <p className="demo-title">Quick Demo Logins</p>
+        <div className="demo-buttons">
+          <button
+            type="button"
+            className="secondary-btn btn-sm"
+            onClick={() => handleQuickLogin("admin@platform.com", "Password123!")}
+          >
+            Admin
+          </button>
+          <button
+            type="button"
+            className="secondary-btn btn-sm"
+            onClick={() => handleQuickLogin("user@platform.com", "Password123!")}
+          >
+            User
+          </button>
+          <button
+            type="button"
+            className="secondary-btn btn-sm"
+            onClick={() => handleQuickLogin("owner@store.com", "Password123!")}
+          >
+            Store Owner
+          </button>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <input
           type="email"
           name="email"
-          placeholder="Email"
+          placeholder="Email Address"
           value={form.email}
           onChange={handleChange}
           required
@@ -70,10 +108,12 @@ const Login = () => {
 
         {error && <p className="error">{error}</p>}
 
-        <button type="submit">Login</button>
+        <button type="submit" className="primary-btn" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
       </form>
 
-      <p>
+      <p style={{ textAlign: "center", marginTop: "20px" }}>
         Don't have an account? <Link to="/register">Register</Link>
       </p>
     </div>

@@ -7,7 +7,7 @@ const validateUser = ({ name, email, address, password, role }) => {
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!emailPattern.test(email)) {
+  if (!email || !emailPattern.test(email)) {
     errors.push("Invalid email.");
   }
 
@@ -29,6 +29,30 @@ const validateUser = ({ name, email, address, password, role }) => {
   return errors;
 };
 
+const validateStore = ({ name, email, address, owner_id }) => {
+  const errors = [];
+
+  if (!name || name.trim().length === 0 || name.length > 100) {
+    errors.push("Store name is required and cannot exceed 100 characters.");
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email && !emailPattern.test(email)) {
+    errors.push("Invalid email format.");
+  }
+
+  if (address && address.length > 400) {
+    errors.push("Address cannot exceed 400 characters.");
+  }
+
+  if (!owner_id) {
+    errors.push("Store owner is required.");
+  }
+
+  return errors;
+};
+
 module.exports = {
   validateUser,
+  validateStore,
 };

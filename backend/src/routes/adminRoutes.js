@@ -22,4 +22,6 @@ router.post("/stores", admin.addStore);
 
 router.get("/stores", admin.listStores);
 
+router.put("/password", admin.changePassword);
+
 module.exports = router;

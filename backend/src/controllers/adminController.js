@@ -7,9 +7,11 @@ const {
   getUserById,
   createStore,
   getStores,
+  updateAdminPassword,
 } = require("../models/adminModel");
 const { findUserByEmail } = require("../models/userModel");
-const { validateUser } = require("../validations/adminValidation");
+const { validateUser, validateStore } = require("../validations/adminValidation");
+const { validatePassword } = require("../validations/userValidation");
 
 const dashboard = async (req, res, next) => {
   try {
@@ -26,7 +28,7 @@ const addUser = async (req, res, next) => {
     const errors = validateUser(req.body);
 
     if (errors.length) {
-      return sendResponse(res, 400, "Validation failed", errors);
+      return sendResponse(res, 400, errors[0], errors);
     }
 
     const existing = await findUserByEmail(req.body.email);
@@ -62,6 +64,10 @@ const userDetails = async (req, res, next) => {
   try {
     const user = await getUserById(req.params.id);
 
+    if (!user) {
+      return sendResponse(res, 404, "User not found");
+    }
+
     sendResponse(res, 200, "User details", user);
   } catch (error) {
     next(error);
@@ -70,6 +76,12 @@ const userDetails = async (req, res, next) => {
 
 const addStore = async (req, res, next) => {
   try {
+    const errors = validateStore(req.body);
+
+    if (errors.length) {
+      return sendResponse(res, 400, errors[0], errors);
+    }
+
     const store = await createStore(req.body);
 
     sendResponse(res, 201, "Store created", store);
@@ -88,6 +100,24 @@ const listStores = async (req, res, next) => {
   }
 };
 
+const changePassword = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+
+    if (!validatePassword(password)) {
+      return sendResponse(res, 400, "Invalid password format.");
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    await updateAdminPassword(req.user.id, hashed);
+
+    sendResponse(res, 200, "Password updated successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   dashboard,
   addUser,
@@ -95,4 +125,5 @@ module.exports = {
   userDetails,
   addStore,
   listStores,
+  changePassword,
 };

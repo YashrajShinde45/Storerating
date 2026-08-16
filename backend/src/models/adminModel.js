@@ -59,9 +59,18 @@ const getUsers = async ({
 
 const getUserById = async (id) => {
   const result = await pool.query(
-    `SELECT id,name,email,address,role
-     FROM users
-     WHERE id=$1`,
+    `SELECT
+      u.id,
+      u.name,
+      u.email,
+      u.address,
+      u.role,
+      ROUND(COALESCE(AVG(r.rating), 0), 1) AS rating
+     FROM users u
+     LEFT JOIN stores s ON u.id = s.owner_id
+     LEFT JOIN ratings r ON s.id = r.store_id
+     WHERE u.id = $1
+     GROUP BY u.id`,
     [id]
   );
 
@@ -101,20 +110,30 @@ const getStores = async ({
       s.name,
       s.email,
       s.address,
-      COALESCE(AVG(r.rating),0) AS rating
+      s.owner_id,
+      u.name AS owner_name,
+      ROUND(COALESCE(AVG(r.rating),0), 1) AS rating
     FROM stores s
-    LEFT JOIN ratings r
-      ON s.id=r.store_id
+    LEFT JOIN users u ON s.owner_id = u.id
+    LEFT JOIN ratings r ON s.id = r.store_id
     WHERE
       ($1='' OR s.name ILIKE '%'||$1||'%'
+      OR s.email ILIKE '%'||$1||'%'
       OR s.address ILIKE '%'||$1||'%')
-    GROUP BY s.id
-    ORDER BY ${sortField} ${sortOrder}
+    GROUP BY s.id, u.name
+    ORDER BY s.${sortField} ${sortOrder}
     `,
     [search]
   );
 
   return result.rows;
+};
+
+const updateAdminPassword = async (adminId, hashedPassword) => {
+  await pool.query(
+    `UPDATE users SET password = $2 WHERE id = $1`,
+    [adminId, hashedPassword]
+  );
 };
 
 module.exports = {
@@ -124,4 +143,5 @@ module.exports = {
   getUserById,
   createStore,
   getStores,
+  updateAdminPassword,
 };

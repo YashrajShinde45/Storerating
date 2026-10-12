@@ -1,4 +1,4 @@
-const validateRegister = ({ name, email, address, password }) => {
+const validateRegister = ({ name, email, address, password, role }) => {
   const errors = [];
 
   if (!name || name.trim().length < 20 || name.trim().length > 60) {
@@ -22,6 +22,10 @@ const validateRegister = ({ name, email, address, password }) => {
     errors.push(
       "Password must be 8-16 characters with at least one uppercase letter and one special character."
     );
+  }
+
+  if (role && !["user", "owner", "admin"].includes(role)) {
+    errors.push("Invalid role selected. Allowed roles are: user, owner, admin.");
   }
 
   return errors;

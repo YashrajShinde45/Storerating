@@ -6,6 +6,7 @@ import Register from "../pages/auth/Register";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserDashboard from "../pages/user/UserDashboard";
 import OwnerDashboard from "../pages/owner/OwnerDashboard";
+import Profile from "../pages/profile/Profile";
 
 import AuthLayout from "../layouts/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -68,6 +69,15 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute role="owner">
                 <OwnerDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />
